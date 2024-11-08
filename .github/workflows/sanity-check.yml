@@ -12,6 +12,6 @@ jobs:
       - name: Lint check
         run: |
           npm run lint
-      - name: Display CodeSandbox Link
-        run: |
-          echo "You can view the project in CodeSandbox: https://codesandbox.io/s/your-project-link"
+      # - name: Display CodeSandbox Link
+      #   run: |
+      #     echo "You can view the project in CodeSandbox: https://codesandbox.io/s/your-project-link"
