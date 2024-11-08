@@ -18,7 +18,7 @@ export function financialTransaction(
   type: string,
   comment: string,
 ): void {
-  let date = new Date().toLocaleDateString("ru-RU");
+  const date = new Date().toLocaleDateString("ru-RU");
   const transaction: FinancialTransaction = {
     date, // Преобразуем строку в объект Date
     summa,
