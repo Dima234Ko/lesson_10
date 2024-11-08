@@ -1,0 +1,17 @@
+name: PR Sanity Check
+on: pull_request
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Packages
+        run: |
+          npm install
+      - name: Lint check
+        run: |
+          npm run lint
+      - name: Display CodeSandbox Link
+        run: |
+          echo "You can view the project in CodeSandbox: https://codesandbox.io/p/github/Dima234Ko/lesson_10/step_1?import=true&workspaceId=3b5c231b-88c9-4529-8bbd-2bdf3a959118"
