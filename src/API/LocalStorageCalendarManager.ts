@@ -1,80 +1,62 @@
-import fs from 'fs';
-import { CalendarEvent, CalendarManager } from './CalendarEvent';
+// LocalStorageCalendarManager.ts
+import { ICalendarManager, CalendarEvent, EventFilter } from './ICalendarManager';
 
-export class LocalStorageCalendarManager implements CalendarManager {
-    private filePath: string;
+export class LocalStorageCalendarManager implements ICalendarManager {
+    private storageKey: string;
 
     constructor() {
-        this.filePath = 'calendarEvents.json';
+        this.storageKey = 'calendarEvents';
+        if (!localStorage.getItem(this.storageKey)) {
+            localStorage.setItem(this.storageKey, JSON.stringify([]));
+        }
     }
 
-    private getEvents(): Promise<CalendarEvent[]> {
-        return new Promise((resolve, reject) => {
-            if (!fs.existsSync(this.filePath)) {
-                return resolve([]);
-            }
-            fs.readFile(this.filePath, 'utf-8', (err, data) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(JSON.parse(data));
-            });
-        });
+    private getEventsFromStorage(): CalendarEvent[] {
+        const rawData = localStorage.getItem(this.storageKey);
+        return rawData ? JSON.parse(rawData) : [];
     }
 
-    private saveEvents(events: CalendarEvent[]): Promise<void> {
-        return new Promise((resolve, reject) => {
-            fs.writeFile(this.filePath, JSON.stringify(events, null, 2), (err) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve();
-            });
-        });
+    private saveEventsToStorage(events: CalendarEvent[]): void {
+        localStorage.setItem(this.storageKey, JSON.stringify(events));
     }
 
-    async createEvent(event: CalendarEvent): Promise<CalendarEvent> {
-        const events = await this.getEvents();
+    async createEvent(event: CalendarEvent): Promise<void> {
+        const events = this.getEventsFromStorage();
         events.push(event);
-        await this.saveEvents(events);
-        return event;
+        this.saveEventsToStorage(events);
     }
 
     async readEvent(id: string): Promise<CalendarEvent | null> {
-        const events = await this.getEvents();
+        const events = this.getEventsFromStorage();
         return events.find(event => event.id === id) || null;
     }
 
-    async updateEvent(id: string, updatedEvent: Partial<CalendarEvent>): Promise<CalendarEvent | null> {
-        const events = await this.getEvents();
-        const eventIndex = events.findIndex(event => event.id === id);
-        if (eventIndex === -1) return null;
-
-        const updated = { ...events[eventIndex], ...updatedEvent };
-        events[eventIndex] = updated;
-        await this.saveEvents(events);
-        return updated;
+    async updateEvent(event: CalendarEvent): Promise<void> {
+        const events = this.getEventsFromStorage();
+        const index = events.findIndex(e => e.id === event.id);
+        if (index !== -1) {
+            events[index] = event;
+            this.saveEventsToStorage(events);
+        }
     }
 
-    async deleteEvent(id: string): Promise<boolean> {
-        const events = await this.getEvents();
-        const newEvents = events.filter(event => event.id !== id);
-        await this.saveEvents(newEvents);
-        return events.length !== newEvents.length;
+    async deleteEvent(id: string): Promise<void> {
+        const events = this.getEventsFromStorage();
+        const filteredEvents = events.filter(event => event.id !== id);
+        this.saveEventsToStorage(filteredEvents);
     }
 
-    async filterEvents(filters: {
-        text?: string;
-        date?: Date;
-        status?: 'pending' | 'completed';
-        tags?: string[];
-    }): Promise<CalendarEvent[]> {
-        const events = await this.getEvents();
+    async getEvents(): Promise<CalendarEvent[]> {
+        return this.getEventsFromStorage();
+    }
+
+    async filterEvents(filter: EventFilter): Promise<CalendarEvent[]> {
+        const events = this.getEventsFromStorage();
         return events.filter(event => {
-            const matchesText = filters.text ? event.title.includes(filters.text) || event.description.includes(filters.text) : true;
-            const matchesDate = filters.date ? event.date.toDateString() === new Date(filters.date).toDateString() : true;
-            const matchesStatus = filters.status ? event.status === filters.status : true;
-            const matchesTags = filters.tags ? filters.tags.every(tag => event.tags.includes(tag)) : true;
+            const matchesText = filter.text ? event.title.includes(filter.text) || event.description.includes(filter.text) : true;
+            const matchesDate = filter.date ? event.date.toDateString() === filter.date.toDateString() : true;
+            const matchesStatus = filter.status ? event.status === filter.status : true;
+            const matchesTags = filter.tags ? filter.tags.every(tag => event.tags.includes(tag)) : true;
 
             return matchesText && matchesDate && matchesStatus && matchesTags;
         });

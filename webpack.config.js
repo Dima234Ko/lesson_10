@@ -1,35 +1,59 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable no-undef */
+import path from "path";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
+import { fileURLToPath } from "url";
 
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const webpack = require('webpack'); // Добавлено для использования IgnorePlugin
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-module.exports = {
-  entry: "./src/server.ts",
+export default {
+  entry: "./src/index.ts",
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "docs"),
-    clean: true,
+    publicPath: "/",
   },
   resolve: {
     extensions: [".ts", ".js"],
-    fallback: {
-      "fs": false,
-      "path": require.resolve("path-browserify"),
-      "http": require.resolve("stream-http"),
-      "https": require.resolve("stream-http"),
-      "crypto": require.resolve("crypto-browserify"),
-      "stream": require.resolve("stream-browserify"),
-      "zlib": require.resolve("browserify-zlib"),
-      "querystring": require.resolve("querystring-es3"),
-      "url": require.resolve("url/"),
-      "buffer": require.resolve("buffer/"),
-      "vm": require.resolve("vm-browserify"), // Добавлено
-      "assert": require.resolve("assert/"), // Добавлено
-      "async_hooks": false, // Установлено как false, если не используется
-      "net": false, // Установлено как false, если не используется
-    }
   },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"],
+            plugins: ["@babel/plugin-proposal-object-rest-spread"],
+          },
+        },
+      },
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+        include: path.resolve(__dirname, "src"),
+      },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        use: [
+          {
+            loader: "file-loader",
+            options: {
+              name: "[name].[hash].[ext]",
+              outputPath: "images",
+              publicPath: "images",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html", // Укажите путь к вашему HTML-шаблону
+      filename: "index.html",
+    }),
+  ],
+  mode: "development", // или "production" в зависимости от ваших нужд
 };

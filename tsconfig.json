@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "esnext", // или "es6"
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
