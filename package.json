@@ -29,6 +29,7 @@
     "@types/firebase": "^3.2.3",
     "@types/jest": "^29.5.14",
     "@types/mock-fs": "^4.13.4",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.13.0",
     "@typescript-eslint/parser": "^8.13.0",
     "assert": "^2.1.0",
@@ -69,7 +70,7 @@
     "babel": "^6.23.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",
-    "firebase": "^11.0.1",
+    "firebase": "^11.0.2",
     "lodash": "^4.17.21"
   }
 }

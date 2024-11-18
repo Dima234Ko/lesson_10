@@ -4,7 +4,8 @@ export interface CalendarEvent {
     title: string;
     description: string;
     date: Date;
-    status: 'pending' | 'completed';
+    status:string,
+    // status: 'pending' | 'completed';
     tags: string[];
 }
 
@@ -23,3 +24,5 @@ export interface EventFilter {
     status?: 'pending' | 'completed';
     tags?: string[];
 }
+
+

@@ -1,4 +1,3 @@
-// LocalStorageCalendarManager.ts
 import { ICalendarManager, CalendarEvent, EventFilter } from './ICalendarManager';
 
 export class LocalStorageCalendarManager implements ICalendarManager {
@@ -51,10 +50,15 @@ export class LocalStorageCalendarManager implements ICalendarManager {
     }
 
     async filterEvents(filter: EventFilter): Promise<CalendarEvent[]> {
-        const events = this.getEventsFromStorage();
+        const events = await this.getEvents(); 
         return events.filter(event => {
-            const matchesText = filter.text ? event.title.includes(filter.text) || event.description.includes(filter.text) : true;
-            const matchesDate = filter.date ? event.date.toDateString() === filter.date.toDateString() : true;
+            const matchesText = filter.text ? 
+                event.title.includes(filter.text) || event.description.includes(filter.text) : true;
+            
+            const eventDate = new Date(event.date); 
+            const matchesDate = filter.date ? 
+                eventDate.toDateString() === filter.date.toDateString() : true;
+
             const matchesStatus = filter.status ? event.status === filter.status : true;
             const matchesTags = filter.tags ? filter.tags.every(tag => event.tags.includes(tag)) : true;
 
