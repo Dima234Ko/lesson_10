@@ -1,1 +1,1 @@
-import './API/example'
+import "./API/example";

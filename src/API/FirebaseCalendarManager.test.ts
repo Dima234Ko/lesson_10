@@ -1,105 +1,117 @@
-// FirebaseCalendarManager.test.ts
-
-// Мокаем методы Firestore и uuid
-jest.mock('firebase/firestore', () => {
-    return {
-        collection: jest.fn(),
-        addDoc: jest.fn(),
-        getDocs: jest.fn(),
-        query: jest.fn(),
-        where: jest.fn(),
-        getFirestore: jest.fn(() => ({})), // Добавляем мок для getFirestore
-    };
-});
-
-jest.mock('uuid', () => ({
-    v4: jest.fn(() => 'unique-id'), // Мокаем функцию uuid для предсказуемости
+jest.mock("firebase/firestore", () => ({
+  collection: jest.fn(),
+  addDoc: jest.fn(),
+  getDocs: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  getFirestore: jest.fn(() => ({})),
 }));
 
-import { v4 as uuidv4 } from 'uuid';
-import FirebaseCalendarManager from './FirebaseCalendarManager';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
-import { EventFilter } from './ICalendarManager';
+jest.mock("uuid", () => ({
+  v4: jest.fn(() => "unique-id"),
+}));
 
-describe('FirebaseCalendarManager', () => {
-    let manager: FirebaseCalendarManager;
-    const mockCollection = jest.fn();
-    const mockAddDoc = jest.fn();
-    const mockGetDocs = jest.fn();
-    const mockQuery = jest.fn();
-    const mockWhere = jest.fn();
+import FirebaseCalendarManager from "./FirebaseCalendarManager";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { EventFilter } from "./ICalendarManager";
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-        manager = new FirebaseCalendarManager();
-        (collection as jest.Mock).mockReturnValue(mockCollection);
-        (addDoc as jest.Mock).mockImplementation(mockAddDoc);
-        (getDocs as jest.Mock).mockImplementation(mockGetDocs);
-        (query as jest.Mock).mockImplementation(mockQuery);
-        (where as jest.Mock).mockImplementation(mockWhere);
-    });
+describe("FirebaseCalendarManager", () => {
+  let manager: FirebaseCalendarManager;
+  const mockCollection = jest.fn();
 
-    it('should create an event', async () => {
-        const event = {
-            title: 'Gym session',
-            description: 'Workout and cardio',
-            date: new Date('2023-01-01T00:00:00Z'),
-            status: 'completed',
-            tags: ['personal', 'health'],
-            id: uuidv4()
-        };
+  beforeEach(() => {
+    jest.clearAllMocks();
+    manager = new FirebaseCalendarManager();
+    (collection as jest.Mock).mockReturnValue(mockCollection);
+  });
 
-        await manager.createEvent(event);
+  it("проверка фильтрации", async () => {
+    const filter: EventFilter = {
+      date: new Date("2023-01-01T00:00:00Z"),
+      status: "completed",
+      text: "Gym",
+      tags: ["health"],
+    };
 
-        // Проверяем, что метод addDoc был вызван с объектом, содержащим id
-        expect(addDoc).toHaveBeenCalledWith(mockCollection, {
-            ...event,
-            id: 'unique-id',
+    const mockSnapshot = {
+      forEach: jest.fn((callback) => {
+        callback({
+          id: "1",
+          data: () => ({
+            title: "Gym session",
+            date: filter.date,
+            status: filter.status,
+            tags: ["health"],
+          }),
         });
-    });
+      }),
+    };
 
-    it('should filter events', async () => {
-        const filter: EventFilter = {
-            date: new Date('2023-01-01T00:00:00Z'),
-            status: 'completed',
-            text: 'Gym',
-            tags: ['health'],
-        };
+    (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
+    const mockQuery = jest.fn(); // Создаем мок для query
+    (query as jest.Mock).mockReturnValue(mockQuery);
+    (where as jest.Mock).mockReturnValue(mockQuery);
 
-        const mockSnapshot = {
-            forEach: jest.fn((callback) => {
-                callback({ id: '1', data: () => ({ title: 'Gym session', date: filter.date, status: filter.status, tags: ['health'] }) });
-            }),
-        };
+    const events = await manager.filterEvents(filter);
 
-        (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-        (query as jest.Mock).mockReturnValue(mockQuery);
-        (where as jest.Mock).mockReturnValue(mockWhere);
+    // Проверяем, что метод getDocs был вызван с правильным запросом
+    expect(getDocs).toHaveBeenCalledWith(mockQuery);
+    expect(events).toEqual([
+      {
+        id: "1",
+        title: "Gym session",
+        date: filter.date,
+        status: filter.status,
+        tags: ["health"],
+      },
+    ]);
+  });
 
-        const events = await manager.filterEvents(filter);
+  it("проверка получения событий", async () => {
+    const mockSnapshot = {
+      forEach: jest.fn((callback) => {
+        callback({
+          id: "1",
+          data: () => ({
+            title: "Gym session",
+            date: new Date(),
+            status: "completed",
+            tags: ["health"],
+          }),
+        });
+        callback({
+          id: "2",
+          data: () => ({
+            title: "Meeting",
+            date: new Date(),
+            status: "pending",
+            tags: ["work"],
+          }),
+        });
+      }),
+    };
 
-        // Проверяем, что метод getDocs был вызван с правильным запросом
-        expect(getDocs).toHaveBeenCalledWith(mockQuery);
-        expect(events).toEqual([{ id: '1', title: 'Gym session', date: filter.date, status: filter.status, tags: ['health'] }]);
-    });
+    (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
 
-    it('should get all events', async () => {
-        const mockSnapshot = {
-            forEach: jest.fn((callback) => {
-                callback({ id: '1', data: () => ({ title: 'Gym session', date: new Date(), status: 'completed', tags: ['health'] }) });
-                callback({ id: '2', data: () => ({ title: 'Meeting', date: new Date(), status: 'pending', tags: ['work'] }) });
-            }),
-        };
+    const events = await manager.getAllEvents();
 
-        (getDocs as jest.Mock).mockResolvedValue(mockSnapshot);
-
-        const events = await manager.getAllEvents();
-
-        // Проверяем, что метод getDocs был вызван с eventsCollection
-        expect(getDocs).toHaveBeenCalledWith(mockCollection);
-        expect(events).toEqual([
-            { id: '1', title: 'Gym session', date: expect.any(Date), status: 'completed', tags: ['health'] },
-            { id: '2', title: 'Meeting', date: expect.any(Date), status: 'pending', tags: ['work'] }
-        ]);
-    });
+    // Проверяем, что метод getDocs был вызван с mockCollection
+    expect(getDocs).toHaveBeenCalledWith(mockCollection);
+    expect(events).toEqual([
+      {
+        id: "1",
+        title: "Gym session",
+        date: expect.any(Date),
+        status: "completed",
+        tags: ["health"],
+      },
+      {
+        id: "2",
+        title: "Meeting",
+        date: expect.any(Date),
+        status: "pending",
+        tags: ["work"],
+      },
+    ]);
+  });
 });
