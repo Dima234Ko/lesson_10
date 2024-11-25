@@ -12,6 +12,12 @@ export interface Message {
   timestamp: Date; 
 }
 
+export interface MessageState {
+  messages: Message[];
+  currentMessage: Message | null;
+  searchResults: Message[];
+}
+
 export interface FetchMessagesAction {
   type: typeof FETCH_MESSAGES;
   payload: Message[];
