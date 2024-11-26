@@ -1,25 +1,20 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable no-undef */
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+import path from "path";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
+import { fileURLToPath } from "url";
 
-module.exports = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default {
   entry: "./src/index.ts",
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "docs"),
+    publicPath: "/",
   },
   resolve: {
-    extensions: [".ts", ".js"], // Поддержка расширений .ts и .js
+    extensions: [".ts", ".js"],
   },
-  plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      filename: "index.html",
-      template: "src/index.html",
-    }),
-  ],
   module: {
     rules: [
       {
@@ -53,4 +48,12 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: "./src/index.html", // Укажите путь к вашему HTML-шаблону
+      filename: "index.html",
+    }),
+  ],
+  mode: "development", // или "production" в зависимости от ваших нужд
 };
