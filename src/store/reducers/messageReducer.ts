@@ -4,14 +4,8 @@ import {
   SEND_MESSAGE,
   SEARCH_MESSAGES,
   MessageActionTypes,
-  Message,
-} from '../types/messageTypes';
-
-interface MessageState {
-  messages: Message[];
-  currentMessage: Message | null;
-  searchResults: Message[];
-}
+  MessageState,
+} from "../types/messageTypes";
 
 const initialState: MessageState = {
   messages: [],
@@ -19,7 +13,10 @@ const initialState: MessageState = {
   searchResults: [],
 };
 
-const messageReducer = (state = initialState, action: MessageActionTypes): MessageState => {
+const messageReducer = (
+  state = initialState,
+  action: MessageActionTypes,
+): MessageState => {
   switch (action.type) {
     case FETCH_MESSAGES:
       return { ...state, messages: action.payload };
@@ -31,7 +28,7 @@ const messageReducer = (state = initialState, action: MessageActionTypes): Messa
       return {
         ...state,
         searchResults: state.messages.filter((message) =>
-          message.text.includes(action.payload)
+          message.text.includes(action.payload),
         ),
       };
     default:
@@ -39,8 +36,10 @@ const messageReducer = (state = initialState, action: MessageActionTypes): Messa
   }
 };
 
-// Новый редюсер (пример)
-const newMessageReducer = (state = initialState, action: MessageActionTypes): MessageState => {
+const newMessageReducer = (
+  state = initialState,
+  action: MessageActionTypes,
+): MessageState => {
   switch (action.type) {
     case FETCH_MESSAGES:
       return { ...state, messages: action.payload };
@@ -48,7 +47,6 @@ const newMessageReducer = (state = initialState, action: MessageActionTypes): Me
       return { ...state, currentMessage: action.payload };
     case SEND_MESSAGE:
       return { ...state, messages: [...state.messages, action.payload] };
-    // Дополнительная логика для нового редюсера
     default:
       return state;
   }
@@ -56,4 +54,3 @@ const newMessageReducer = (state = initialState, action: MessageActionTypes): Me
 
 export { messageReducer, newMessageReducer };
 export default messageReducer;
-  

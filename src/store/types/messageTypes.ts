@@ -1,15 +1,15 @@
 // messageTypes.ts
 
-export const FETCH_MESSAGES = 'FETCH_MESSAGES';
-export const FETCH_MESSAGE = 'FETCH_MESSAGE';
-export const SEND_MESSAGE = 'SEND_MESSAGE';
-export const SEARCH_MESSAGES = 'SEARCH_MESSAGES';
+export const FETCH_MESSAGES = "FETCH_MESSAGES";
+export const FETCH_MESSAGE = "FETCH_MESSAGE";
+export const SEND_MESSAGE = "SEND_MESSAGE";
+export const SEARCH_MESSAGES = "SEARCH_MESSAGES";
 
 export interface Message {
   id: number;
   text: string;
-  senderId: number; 
-  timestamp: Date; 
+  senderId: number;
+  timestamp: Date;
 }
 
 export interface MessageState {

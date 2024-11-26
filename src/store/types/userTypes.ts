@@ -1,4 +1,4 @@
-export const FETCH_USERS = 'FETCH_USERS';
+export const FETCH_USERS = "FETCH_USERS";
 
 export interface User {
   id: string;
@@ -12,8 +12,6 @@ export interface FetchUsersAction {
 
 export type UserActionTypes = FetchUsersAction;
 
-
 export interface UserState {
   users: User[];
 }
-
