@@ -10,20 +10,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const calendar = new Calendar(calendarEl, {
             plugins: [dayGridPlugin],
             initialView: 'dayGridMonth',
-            events: [
-                { title: 'Event 1', date: '2023-10-01' },
-                { title: 'Event 2', date: '2023-10-07' },
-            ],
+
             dayCellDidMount: function(arg) {
                 // Создаем кнопку
                 const button = document.createElement('button');
-                button.innerText = 'Кнопка';
-                button.onclick = () => {
-                    alert(`Кнопка нажата для ${arg.dateStr}`);
-                };
 
+                button.innerText = 'Кнопка';
+              
+
+                const dateStr = arg.date.toLocaleString('ru-RU', {
+                    timeZone: 'Europe/Moscow', // Укажите нужный часовой пояс
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                });
+
+                button.id = dateStr; // Устанавливаем id кнопки
                 // Добавляем кнопку в ячейку
-                arg.el.appendChild(button); // Используем arg.el вместо arg.dayEl
+                arg.el.appendChild(button);
             },
         });
 
